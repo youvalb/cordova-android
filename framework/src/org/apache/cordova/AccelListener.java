@@ -127,7 +127,7 @@ public class AccelListener extends Plugin implements SensorEventListener {
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-    //
+
     /**
      * Start listening for acceleration sensor.
      * 

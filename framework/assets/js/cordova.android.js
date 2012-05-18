@@ -3512,6 +3512,7 @@ var accelerometer = {
             window.clearInterval(timers[id].timer);
             removeListeners(timers[id].listeners);
             delete timers[id];
+            exec(null, null, "Accelerometer", "clearWatch", [id]);
         }
     }
 };
