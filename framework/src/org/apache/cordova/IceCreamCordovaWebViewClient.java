@@ -19,6 +19,7 @@
 package org.apache.cordova;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.cordova.api.CordovaInterface;
 import org.apache.cordova.api.DataResource;
@@ -55,7 +56,12 @@ public class IceCreamCordovaWebViewClient extends CordovaWebViewClient {
 
         if(ret == null) {
             try {
-               ret = new WebResourceResponse(dataResource.getMimeType(), "UTF-8", dataResource.getInputStream());
+                InputStream is = dataResource.getInputStream();
+                if(is != null) {
+                    String mimeType = dataResource.getMimeType();
+                    // If we don't know how to open this file, let the browser continue loading
+                    ret = new WebResourceResponse(mimeType, "UTF-8", is);
+                }
             } catch(IOException e) {
                 LOG.e("IceCreamCordovaWebViewClient", "Error occurred while loading a file.", e);
             }

@@ -107,7 +107,7 @@ public class FileHelper {
                 return new FileInputStream(getRealPath(uriString, cordova));
             }
         } else {
-            return new FileInputStream(getRealPath(uriString, cordova));
+            return null;
         }
     }
 
