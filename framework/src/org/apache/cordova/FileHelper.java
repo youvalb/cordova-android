@@ -18,6 +18,10 @@
  */
 package org.apache.cordova;
 
+import java.io.UnsupportedEncodingException;
+
+import java.net.URLDecoder;
+
 import android.database.Cursor;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
@@ -59,6 +63,19 @@ public class FileHelper {
             }
         } else if (uriString.startsWith("file://")) {
             realPath = uriString.substring(7);
+
+            int question = realPath.indexOf("?");
+            if (question > -1) {
+            	realPath = realPath.substring(0, question);
+            }
+
+            // Remove any URL encoding, for things like %20.
+            try {
+                realPath = URLDecoder.decode(realPath, "UTF-8");
+            } catch (UnsupportedEncodingException uee) {
+            }
+
+
             if (realPath.startsWith("/android_asset/")) {
                 LOG.e(LOG_TAG, "Cannot get real path for URI string %s because it is a file:///android_asset/ URI.", uriString);
                 realPath = null;
