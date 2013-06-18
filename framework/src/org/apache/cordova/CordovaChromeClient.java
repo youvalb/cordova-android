@@ -23,11 +23,13 @@ import org.apache.cordova.api.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -37,6 +39,7 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.GeolocationPermissions.Callback;
@@ -91,7 +94,29 @@ public class CordovaChromeClient extends WebChromeClient {
     public void setWebView(CordovaWebView view) {
         this.appView = view;
     }
+    
+    @SuppressLint("NewApi")
+    public boolean onCreateWindow (WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
+        CordovaActivity act = (CordovaActivity)this.cordova.getActivity();
+        WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
 
+        WebView newWebView = new WebView(act);
+        WebSettings settings = newWebView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setAllowFileAccess(true);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            settings.setAllowUniversalAccessFromFileURLs(true);
+        }
+
+        //act.root.addView(newWebView, 0);
+        
+        String payload = "<html><script>opener.XMLHttpRequest=XMLHttpRequest</script></html>";
+        newWebView.loadDataWithBaseURL("file:///hi.html", payload, "text/html", "UTF-8", "file:///hi.html");
+        transport.setWebView(newWebView);
+        resultMsg.sendToTarget();
+        return true;
+    }
+    
     /**
      * Tell the client to display a javascript alert dialog.
      *
