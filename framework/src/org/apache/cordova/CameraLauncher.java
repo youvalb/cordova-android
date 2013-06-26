@@ -323,6 +323,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                         if (uri == null) {
                             this.failPicture("Error capturing image - no media storage found.");
+			    return;
                         }
 
                         // If all this is true we shouldn't compress the image.
@@ -334,8 +335,17 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         } else {
                             bitmap = getScaledBitmap(FileHelper.stripFileProtocol(imageUri.toString()));
 
+			    if (bitmap == null) {
+				this.failPicture("Error capturing image - no bitmap obtained.");
+				return;
+			    }
+				
                             if (rotate != 0 && this.correctOrientation) {
                                 bitmap = getRotatedBitmap(rotate, bitmap, exif);
+				if (bitmap == null) {
+				    this.failPicture("Error capturing image - rotation failed.");
+				    return;
+				}
                             }
 
                             // Add compressed version of captured image to returned media store Uri
@@ -579,7 +589,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private Bitmap getScaledBitmap(String imageUrl) throws IOException {
         // If no new width or height were specified return the original bitmap
         if (this.targetWidth <= 0 && this.targetHeight <= 0) {
-            return BitmapFactory.decodeStream(FileHelper.getInputStreamFromUriString(imageUrl, cordova));
+	    
+            Bitmap bitmap =  BitmapFactory.decodeStream(FileHelper.getInputStreamFromUriString(imageUrl, cordova));
+	    if (bitmap == null) 
+		LOG.d(LOG_TAG, "getScaledBitmap: BitmapFactory.decodeStream returned null");
+
+	    return bitmap;
         }
 
         // figure out the original width and height of the image
@@ -590,6 +605,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         //CB-2292: WTF? Why is the width null?
         if(options.outWidth == 0 || options.outHeight == 0)
         {
+	    LOG.d(LOG_TAG, "getScaledBitmap:(options.outWidth == 0 || options.outHeight == 0): returning null");
             return null;
         }
         
@@ -601,6 +617,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         options.inSampleSize = calculateSampleSize(options.outWidth, options.outHeight, this.targetWidth, this.targetHeight);
         Bitmap unscaledBitmap = BitmapFactory.decodeStream(FileHelper.getInputStreamFromUriString(imageUrl, cordova), null, options);
         if (unscaledBitmap == null) {
+	    LOG.d(LOG_TAG, "getScaledBitmap: unscaled bitmap is null");
             return null;
         }
 
